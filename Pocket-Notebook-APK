@@ -1,0 +1,42 @@
+name: Build Pocket Notebook APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract project ZIP
+        run: |
+          unzip -o PocketNotebook_APK_Build_Kit.zip -d project
+          cd project
+          unzip -o PocketNotebook_Flutter_V2.zip -d .
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Build APK
+        working-directory: project
+        run: |
+          flutter create --platforms=android --project-name=pocket_notebook --org=com.example .
+          flutter pub get
+          flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pocket-Notebook-APK
+          path: project/build/app/outputs/flutter-apk/app-release.apk
